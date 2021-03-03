@@ -30,6 +30,7 @@ public final class BanSharePlugin extends JavaPlugin {
         }
 
         getServer().getPluginManager().registerEvents(new BanShareListener(con, getConfig().getString("Area")), this);
+        getCommand("gban").setExecutor(new BanCommand(con));
     }
 
     @Override
