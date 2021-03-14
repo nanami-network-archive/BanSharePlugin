@@ -2,6 +2,7 @@ package xyz.n7mn.dev.banshareplugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -41,7 +42,16 @@ public class BanCommand implements CommandExecutor {
 
                 Player player = Bukkit.getServer().getPlayer(args[0]);
                 if (player == null){
-                    sender.sendMessage(ChatColor.YELLOW + "いまログインしていないユーザーです！！");
+                    for (OfflinePlayer player1 : Bukkit.getServer().getOfflinePlayers()){
+                        if (player1.getName().equals(args[0])){
+                            player = player1.getPlayer();
+                            break;
+                        }
+                    }
+                }
+
+                if (player == null){
+                    sender.sendMessage(ChatColor.YELLOW + "いまログインしていないか 起動してから一度も入っていないユーザーです！！");
                     return true;
                 }
 
@@ -72,7 +82,7 @@ public class BanCommand implements CommandExecutor {
                     statement2.setString(4, Bukkit.getServer().getPluginManager().getPlugin("BanSharePlugin").getConfig().getString("Area"));
                     statement2.setString(5, player.getAddress().getHostName());
                     statement2.setString(6, "9999-12-31 23:59:59");
-                    statement2.setDate(7, new Date(new java.util.Date().getTime()));
+                    statement2.setTime(7, new Time(new java.util.Date().getTime()));
                     if (exePlayer != null){
                         statement2.setString(8, exePlayer.getUniqueId().toString());
                     } else {
@@ -85,6 +95,7 @@ public class BanCommand implements CommandExecutor {
                 } catch (SQLException e){
                     e.printStackTrace();
                 }
+                player.kickPlayer("");
 
 
                 Collection<? extends Player> onlinePlayers = Bukkit.getServer().getOnlinePlayers();
