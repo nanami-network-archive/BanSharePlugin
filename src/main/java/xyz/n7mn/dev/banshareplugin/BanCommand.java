@@ -10,8 +10,10 @@ import org.bukkit.entity.Player;
 import xyz.n7mn.dev.banshareplugin.data.BanData;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -82,7 +84,9 @@ public class BanCommand implements CommandExecutor {
                     statement2.setString(4, Bukkit.getServer().getPluginManager().getPlugin("BanSharePlugin").getConfig().getString("Area"));
                     statement2.setString(5, player.getAddress().getHostName());
                     statement2.setString(6, "9999-12-31 23:59:59");
-                    statement2.setTime(7, new Time(new java.util.Date().getTime()));
+
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    statement2.setString(7, sdf.format(new Date()));
                     if (exePlayer != null){
                         statement2.setString(8, exePlayer.getUniqueId().toString());
                     } else {
