@@ -27,6 +27,8 @@ repositories {
 dependencies {
     compileOnly 'com.destroystokyo.paper:paper-api:1.12.2-R0.1-SNAPSHOT'
     compile 'mysql:mysql-connector-java:8.0.23'
+    compile 'com.squareup.okhttp3:okhttp:4.9.0'
+    compile 'com.google.code.gson:gson:2.8.6'
 }
 
 processResources {

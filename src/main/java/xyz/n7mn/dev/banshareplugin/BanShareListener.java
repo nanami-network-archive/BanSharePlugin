@@ -35,6 +35,7 @@ public class BanShareListener implements Listener {
             try {
                 PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList` WHERE Active = 1");
                 statement.execute();
+                statement.close();
             } catch (SQLException ex){
                 String pass = "jdbc:mysql://" + plugin.getConfig().getString("mysqlServer") + ":" + plugin.getConfig().getInt("mysqlPort") + "/" + plugin.getConfig().getString("mysqlDatabase") + plugin.getConfig().getString("mysqlOption");
                 DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
