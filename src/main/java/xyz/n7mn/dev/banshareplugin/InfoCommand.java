@@ -1,5 +1,6 @@
 package xyz.n7mn.dev.banshareplugin;
 
+import com.google.gson.Gson;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -10,6 +11,8 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 import xyz.n7mn.dev.banshareplugin.data.BanData;
+import xyz.n7mn.dev.banshareplugin.data.MCID2UUIDAPIResult;
+import xyz.n7mn.dev.banshareplugin.data.UUID2MCIDResult;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -115,7 +118,9 @@ public class InfoCommand implements CommandExecutor {
 
             try {
                 Response response = client.newCall(request).execute();
-                String uuidText = response.body().string();
+                String json = response.body().string();
+                MCID2UUIDAPIResult result = new Gson().fromJson(json, MCID2UUIDAPIResult.class);
+                String uuidText = result.getName();
                 response.close();
 
                 UUID uuid = UUID.fromString(uuidText.replaceFirst("([0-9a-fA-F]{8})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]+)", "$1-$2-$3-$4-$5"));
@@ -196,8 +201,6 @@ public class InfoCommand implements CommandExecutor {
             PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList` WHERE BanID = ?");
             statement.setInt(1, id);
             ResultSet set = statement.executeQuery();
-
-            boolean s = false;
             if (set.next()){
 
                 String username = "";
@@ -206,7 +209,9 @@ public class InfoCommand implements CommandExecutor {
                         .build();
                 try {
                     Response response = client.newCall(request).execute();
-                    username = response.body().string();
+                    String json = response.body().string();
+                    UUID2MCIDResult result = new Gson().fromJson(json, UUID2MCIDResult.class);
+                    username = result.getName();
                     response.close();
                 } catch (Exception e){
                     e.printStackTrace();
