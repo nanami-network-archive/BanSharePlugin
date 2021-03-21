@@ -120,7 +120,7 @@ public class InfoCommand implements CommandExecutor {
                 Response response = client.newCall(request).execute();
                 String json = response.body().string();
                 MCID2UUIDAPIResult result = new Gson().fromJson(json, MCID2UUIDAPIResult.class);
-                String uuidText = result.getName();
+                String uuidText = result.getId();
                 response.close();
 
                 UUID uuid = UUID.fromString(uuidText.replaceFirst("([0-9a-fA-F]{8})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]+)", "$1-$2-$3-$4-$5"));
@@ -173,6 +173,7 @@ public class InfoCommand implements CommandExecutor {
                 e.printStackTrace();
             }
 
+            return true;
         }
 
 
@@ -210,8 +211,8 @@ public class InfoCommand implements CommandExecutor {
                 try {
                     Response response = client.newCall(request).execute();
                     String json = response.body().string();
-                    UUID2MCIDResult result = new Gson().fromJson(json, UUID2MCIDResult.class);
-                    username = result.getName();
+                    UUID2MCIDResult[] result = new Gson().fromJson(json, UUID2MCIDResult[].class);
+                    username = result[result.length - 1].getName();
                     response.close();
                 } catch (Exception e){
                     e.printStackTrace();
