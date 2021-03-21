@@ -8,12 +8,13 @@ commands:
   gban:
     usage: '/gban'
     permission: '7misys.ban'
-  lban:
-    usage: '/lban'
-    permission: '7misys.ban'
   unban:
     usage: '/unban'
     permission: '7misys.unban'
   baninfo:
     usage: '/baninfo'
     permission: '7misys.info'
+  report:
+    usage: '/report'
+  r:
+    usage: '/report'

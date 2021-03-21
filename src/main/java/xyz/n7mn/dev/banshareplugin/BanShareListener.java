@@ -1,9 +1,11 @@
 package xyz.n7mn.dev.banshareplugin;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.plugin.Plugin;
 import xyz.n7mn.dev.banshareplugin.data.BanData;
@@ -79,6 +81,17 @@ public class BanShareListener implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler
+    public void InventoryClickEvent (InventoryClickEvent e){
+
+        if (!e.getClickedInventory().getName().equals("通報プレーヤー選択")){
+            return;
+        }
+
+        e.getView().getPlayer().closeInventory();
+        e.getView().getPlayer().sendMessage(ChatColor.YELLOW + "まだ未実装です。 お楽しみに。");
     }
 
 }

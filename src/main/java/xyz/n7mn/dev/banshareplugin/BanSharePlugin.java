@@ -5,6 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Collections;
 
 public final class BanSharePlugin extends JavaPlugin {
 
@@ -30,9 +31,11 @@ public final class BanSharePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new BanShareListener(con, getConfig().getString("Area")), this);
         getCommand("gban").setExecutor(new BanCommand(con));
         getCommand("gban").setTabCompleter(new CommandTab());
-
-
         getCommand("baninfo").setExecutor(new InfoCommand(this, con));
+
+        getCommand("report").setExecutor(new ReportCommand());
+        getCommand("r").setExecutor(new ReportCommand());
+
     }
 
     @Override
