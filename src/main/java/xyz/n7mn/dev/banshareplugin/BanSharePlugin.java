@@ -3,9 +3,11 @@ package xyz.n7mn.dev.banshareplugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Collections;
+import java.util.Enumeration;
 
 public final class BanSharePlugin extends JavaPlugin {
 
@@ -19,6 +21,7 @@ public final class BanSharePlugin extends JavaPlugin {
         String pass = "jdbc:mysql://" + getConfig().getString("mysqlServer") + ":" + getConfig().getInt("mysqlPort") + "/" + getConfig().getString("mysqlDatabase") + getConfig().getString("mysqlOption");
 
         try {
+            DriverManager.deregisterDriver(new com.mysql.cj.jdbc.Driver());
             DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
 
             con = DriverManager.getConnection(pass, getConfig().getString("mysqlUsername"), getConfig().getString("mysqlPassword"));

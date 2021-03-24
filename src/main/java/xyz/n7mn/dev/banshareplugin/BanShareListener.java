@@ -7,6 +7,9 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
 import xyz.n7mn.dev.banshareplugin.data.BanData;
 
@@ -33,16 +36,17 @@ public class BanShareListener implements Listener {
         List<BanData> banDataList = new ArrayList<>();
 
         try {
-
             try {
                 PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList` WHERE Active = 1");
                 statement.execute();
                 statement.close();
             } catch (SQLException ex){
                 String pass = "jdbc:mysql://" + plugin.getConfig().getString("mysqlServer") + ":" + plugin.getConfig().getInt("mysqlPort") + "/" + plugin.getConfig().getString("mysqlDatabase") + plugin.getConfig().getString("mysqlOption");
-                DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
 
                 try {
+                    DriverManager.deregisterDriver(new com.mysql.cj.jdbc.Driver());
+                    DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
+
                     con = DriverManager.getConnection(pass, plugin.getConfig().getString("mysqlUsername"), plugin.getConfig().getString("mysqlPassword"));
                     con.setAutoCommit(true);
                 } catch (SQLException exx){
@@ -88,6 +92,15 @@ public class BanShareListener implements Listener {
 
         if (!e.getClickedInventory().getName().equals("通報プレーヤー選択")){
             return;
+        }
+
+        ItemStack stack = e.getCursor();
+        if (stack.getItemMeta() instanceof SkullMeta){
+
+            SkullMeta skullMeta = (SkullMeta) stack.getItemMeta();
+            String owner = skullMeta.getOwner();
+
+
         }
 
         e.getView().getPlayer().closeInventory();
