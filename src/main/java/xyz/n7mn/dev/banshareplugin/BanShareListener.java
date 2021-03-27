@@ -2,6 +2,7 @@ package xyz.n7mn.dev.banshareplugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -15,6 +16,7 @@ import xyz.n7mn.dev.banshareplugin.data.BanData;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -90,21 +92,32 @@ public class BanShareListener implements Listener {
     @EventHandler
     public void InventoryClickEvent (InventoryClickEvent e){
 
-        if (!e.getClickedInventory().getName().equals("通報プレーヤー選択")){
-            return;
+        try {
+            if (e.getClickedInventory().getName() != null && !e.getClickedInventory().getName().equals("通報プレーヤー選択")){
+                return;
+            }
+
+            ItemStack stack = e.getCurrentItem();
+            String id = "";
+            if (stack.getItemMeta() instanceof SkullMeta){
+                SkullMeta skullMeta = (SkullMeta) stack.getItemMeta();
+                id = skullMeta.getOwner();
+            }
+            e.getView().getPlayer().closeInventory();
+            if (!id.equals("")){
+                e.getView().getPlayer().sendMessage(ChatColor.YELLOW + id + "を通報しました。");
+            }
+
+            Collection<? extends Player> players = Bukkit.getServer().getOnlinePlayers();
+            String targetID = id;
+            new Thread(()->{
+                for (Player player : players){
+                    player.sendMessage(ChatColor.YELLOW + e.getView().getPlayer().getName() + "さんが"+targetID+"さんを通報しました。確認願います。");
+                }
+            }).start();
+        } catch (Exception ex){
+            ex.printStackTrace();
         }
-
-        ItemStack stack = e.getCursor();
-        if (stack.getItemMeta() instanceof SkullMeta){
-
-            SkullMeta skullMeta = (SkullMeta) stack.getItemMeta();
-            String owner = skullMeta.getOwner();
-
-
-        }
-
-        e.getView().getPlayer().closeInventory();
-        e.getView().getPlayer().sendMessage(ChatColor.YELLOW + "まだ未実装です。 お楽しみに。");
     }
 
 }
