@@ -7,6 +7,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -112,12 +113,20 @@ public class BanShareListener implements Listener {
             String targetID = id;
             new Thread(()->{
                 for (Player player : players){
-                    player.sendMessage(ChatColor.YELLOW + e.getView().getPlayer().getName() + "さんが"+targetID+"さんを通報しました。確認願います。");
+                    if (!player.isOp()){
+                        continue;
+                    }
+                    player.sendMessage(ChatColor.YELLOW + "[BSP] " + ChatColor.RESET + e.getView().getPlayer().getName() + "さんが"+targetID+"さんを通報しました。");
                 }
             }).start();
         } catch (Exception ex){
             ex.printStackTrace();
         }
+    }
+
+    @EventHandler
+    public void pp (InventoryPickupItemEvent e){
+
     }
 
 }
