@@ -92,48 +92,53 @@ public class BanShareListener implements Listener {
 
     @EventHandler
     public void InventoryClickEvent (InventoryClickEvent e){
-        new Thread(()->{
-            try {
-                if (e.getClickedInventory().getName() != null && !e.getClickedInventory().getName().equals("通報プレーヤー選択")){
-                    return;
-                }
 
-                ItemStack stack = e.getCurrentItem();
-                String id = "";
-                if (stack.getItemMeta() instanceof SkullMeta){
-                    SkullMeta skullMeta = (SkullMeta) stack.getItemMeta();
-                    id = skullMeta.getOwner();
-                }
-                e.getView().getPlayer().closeInventory();
+        if (!e.getClickedInventory().getName().equals("通報プレーヤー選択")){
+            return;
+        }
 
-                boolean foundPlayer = false;
-                for (Player player : plugin.getServer().getOnlinePlayers()){
-                    if (player.getName().equals(id)){
-                        foundPlayer = true;
-                        break;
-                    }
-                }
+        ItemStack stack = e.getCurrentItem();
+        String id = "";
+        if (stack.getItemMeta() instanceof SkullMeta){
+            SkullMeta skullMeta = (SkullMeta) stack.getItemMeta();
+            id = skullMeta.getOwner();
+        }
 
-                if (!foundPlayer){
-                    return;
-                }
+        e.getView().getPlayer().closeInventory();
 
-                if (!id.equals("")){
-                    e.getView().getPlayer().sendMessage(ChatColor.YELLOW + id + "を通報しました。");
+        try {
+            boolean foundPlayer = false;
+            for (Player player : plugin.getServer().getOnlinePlayers()){
+                if (player.getName().equals(id)){
+                    foundPlayer = true;
+                    break;
                 }
+            }
 
-                Collection<? extends Player> players = Bukkit.getServer().getOnlinePlayers();
-                String targetID = id;
+            if (!foundPlayer){
+                return;
+            }
+
+            if (!id.equals("")){
+                e.getView().getPlayer().sendMessage(ChatColor.YELLOW + id + "を通報しました。");
+            }
+
+            Collection<? extends Player> players = Bukkit.getServer().getOnlinePlayers();
+            String targetID = id;
+            new Thread(()->{
                 for (Player player : players){
                     if (!player.isOp()){
                         continue;
                     }
                     player.sendMessage(ChatColor.YELLOW + "[BSP] " + ChatColor.RESET + e.getView().getPlayer().getName() + "さんが"+targetID+"さんを通報しました。");
                 }
-            } catch (Exception ex){
-                ex.printStackTrace();
-            }
-        }).start();
+            }).start();
+        } catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+
+
     }
 
 }
