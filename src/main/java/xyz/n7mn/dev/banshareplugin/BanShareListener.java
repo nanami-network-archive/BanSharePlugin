@@ -93,6 +93,10 @@ public class BanShareListener implements Listener {
     @EventHandler
     public void InventoryClickEvent (InventoryClickEvent e){
 
+        if (e.getClickedInventory() == null){
+            return;
+        }
+
         if (!e.getClickedInventory().getName().equals("通報プレーヤー選択")){
             return;
         }
