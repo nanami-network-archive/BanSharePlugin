@@ -2,13 +2,16 @@ package xyz.n7mn.dev.banshareplugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.inventory.InventoryPickupItemEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -102,6 +105,7 @@ public class BanShareListener implements Listener {
         }
 
         ItemStack stack = e.getCurrentItem();
+        e.setCurrentItem(new ItemStack(Material.AIR));
         String id = "";
         if (stack.getItemMeta() instanceof SkullMeta){
             SkullMeta skullMeta = (SkullMeta) stack.getItemMeta();
@@ -109,6 +113,7 @@ public class BanShareListener implements Listener {
         }
 
         e.getView().getPlayer().closeInventory();
+        e.setCancelled(true);
 
         try {
             boolean foundPlayer = false;
@@ -141,7 +146,21 @@ public class BanShareListener implements Listener {
             ex.printStackTrace();
         }
 
+    }
 
+    @EventHandler
+    public void InventoryCreativeEvent (InventoryCreativeEvent e){
+
+        Inventory inventory = e.getClickedInventory();
+        if (inventory == null){
+            return;
+        }
+
+        if (!inventory.getName().equals("通報プレーヤー選択")){
+            return;
+        }
+
+        e.setCancelled(true);
 
     }
 

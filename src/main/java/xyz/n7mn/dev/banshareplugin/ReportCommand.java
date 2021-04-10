@@ -10,12 +10,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.material.Skull;
 
 public class ReportCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 
+        /*
         if (args.length == 0 && sender instanceof Player){
             Player player = (Player) sender;
 
@@ -33,7 +33,7 @@ public class ReportCommand implements CommandExecutor {
 
             player.openInventory(inventory);
         }
-
+        */
         return true;
     }
 }
