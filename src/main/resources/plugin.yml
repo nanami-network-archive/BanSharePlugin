@@ -4,6 +4,7 @@ main: xyz.n7mn.dev.banshareplugin.BanSharePlugin
 authors: [ 7mi_chan ]
 description: BanSharePlugin
 database: true
+depend: [NanamiLib]
 commands:
   gban:
     usage: '/gban'

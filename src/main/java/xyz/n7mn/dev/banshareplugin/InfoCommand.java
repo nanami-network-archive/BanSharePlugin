@@ -13,6 +13,7 @@ import org.bukkit.plugin.Plugin;
 import xyz.n7mn.dev.banshareplugin.data.BanData;
 import xyz.n7mn.dev.banshareplugin.data.MCID2UUIDAPIResult;
 import xyz.n7mn.dev.banshareplugin.data.UUID2MCIDResult;
+import xyz.n7mn.dev.nanamilib.api.MySQL;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -21,11 +22,9 @@ import java.util.UUID;
 
 public class InfoCommand implements CommandExecutor {
 
-    private Connection con;
     private final Plugin plugin;
-    public InfoCommand(Plugin plugin, Connection con){
+    public InfoCommand(Plugin plugin){
         this.plugin = plugin;
-        this.con = con;
     }
 
     @Override
@@ -37,59 +36,51 @@ public class InfoCommand implements CommandExecutor {
         }
 
 
+
         if (args.length == 0){
             new Thread(()->{
-                List<BanData> banDataList = new ArrayList<>();
-                int AreaBanCount = 0;
                 try {
+                    Connection con = MySQL.getConnect("");
+                    List<BanData> banDataList = new ArrayList<>();
+                    int AreaBanCount = 0;
                     try {
                         PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList` WHERE Active = 1");
-                        statement.execute();
-                        statement.close();
-                    } catch (SQLException ex){
-                        String pass = "jdbc:mysql://" + plugin.getConfig().getString("mysqlServer") + ":" + plugin.getConfig().getInt("mysqlPort") + "/" + plugin.getConfig().getString("mysqlDatabase") + plugin.getConfig().getString("mysqlOption");
-                        DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
+                        ResultSet set = statement.executeQuery();
 
-                        try {
-                            con = DriverManager.getConnection(pass, plugin.getConfig().getString("mysqlUsername"), plugin.getConfig().getString("mysqlPassword"));
-                            con.setAutoCommit(true);
-                        } catch (SQLException exx){
-                            Bukkit.getServer().getPluginManager().disablePlugin(plugin, true);
+                        while(set.next()){
+                            banDataList.add(
+                                    new BanData(
+                                            set.getInt("BanID"),
+                                            UUID.fromString(set.getString("UserUUID")),
+                                            set.getString("Reason"),
+                                            set.getString("Area"),
+                                            set.getString("IP"),
+                                            set.getDate("EndDate"),
+                                            set.getDate("ExecuteDate"),
+                                            UUID.fromString(set.getString("ExecuteUserUUID")),
+                                            set.getBoolean("Active")
+                                    )
+                            );
+
+                            if (set.getString("Area").equals(plugin.getConfig().getString("Area"))){
+                                AreaBanCount++;
+                            }
                         }
+                    } catch (Exception thr) {
+                        thr.printStackTrace();
                     }
 
-                    PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList` WHERE Active = 1");
-                    ResultSet set = statement.executeQuery();
+                    sender.sendMessage("" +
+                            ChatColor.GREEN + "--- BAN情報 ---\n" +
+                            ChatColor.GREEN + "有効件数 : " + banDataList.size() + "件\n" +
+                            ChatColor.GREEN + "内 "+plugin.getConfig().getString("Area")+"のみ : " + AreaBanCount + "件\n" +
+                            ChatColor.YELLOW + "詳細な情報を取得したい場合は/baninfo <ID>または/baninfo <MCID>と入力してください。"
+                    );
 
-                    while(set.next()){
-                        banDataList.add(
-                                new BanData(
-                                        set.getInt("BanID"),
-                                        UUID.fromString(set.getString("UserUUID")),
-                                        set.getString("Reason"),
-                                        set.getString("Area"),
-                                        set.getString("IP"),
-                                        set.getDate("EndDate"),
-                                        set.getDate("ExecuteDate"),
-                                        UUID.fromString(set.getString("ExecuteUserUUID")),
-                                        set.getBoolean("Active")
-                                )
-                        );
-
-                        if (set.getString("Area").equals(plugin.getConfig().getString("Area"))){
-                            AreaBanCount++;
-                        }
-                    }
-                } catch (SQLException thr) {
-                    thr.printStackTrace();
+                    MySQL.closeConnect(con);
+                } catch (Exception e){
+                    e.printStackTrace();
                 }
-
-                sender.sendMessage("" +
-                        ChatColor.GREEN + "--- BAN情報 ---\n" +
-                        ChatColor.GREEN + "有効件数 : " + banDataList.size() + "件\n" +
-                        ChatColor.GREEN + "内 "+plugin.getConfig().getString("Area")+"のみ : " + AreaBanCount + "件\n" +
-                        ChatColor.YELLOW + "詳細な情報を取得したい場合は/baninfo <ID>または/baninfo <MCID>と入力してください。"
-                );
             }).start();
 
             return true;
@@ -99,7 +90,7 @@ public class InfoCommand implements CommandExecutor {
             return true;
         }
 
-        int id = 0;
+        int id;
         try {
             id = Integer.parseInt(args[0]);
         } catch (Exception e){
@@ -124,25 +115,8 @@ public class InfoCommand implements CommandExecutor {
                 response.close();
 
                 UUID uuid = UUID.fromString(uuidText.replaceFirst("([0-9a-fA-F]{8})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]+)", "$1-$2-$3-$4-$5"));
-                try {
-                    try {
-                        PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList`");
-                        statement.execute();
-                        statement.close();
-                    } catch (SQLException ex){
-                        String pass = "jdbc:mysql://" + plugin.getConfig().getString("mysqlServer") + ":" + plugin.getConfig().getInt("mysqlPort") + "/" + plugin.getConfig().getString("mysqlDatabase") + plugin.getConfig().getString("mysqlOption");
-                        DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
 
-                        try {
-                            con = DriverManager.getConnection(pass, plugin.getConfig().getString("mysqlUsername"), plugin.getConfig().getString("mysqlPassword"));
-                            con.setAutoCommit(true);
-                        } catch (SQLException exx){
-                            Bukkit.getServer().getPluginManager().disablePlugin(plugin, true);
-                        }
-                    }
-                } catch (SQLException thr) {
-                    thr.printStackTrace();
-                }
+                Connection con = MySQL.getConnect("");
 
                 PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList` WHERE UserUUID = ?");
                 statement.setString(1, uuid.toString());
@@ -167,6 +141,8 @@ public class InfoCommand implements CommandExecutor {
                     return true;
                 }
 
+                MySQL.closeConnect(con);
+
                 sender.sendMessage(ChatColor.YELLOW + "BANされていないユーザーです");
 
             } catch (Exception e){
@@ -178,26 +154,7 @@ public class InfoCommand implements CommandExecutor {
 
 
         try {
-
-            try {
-                try {
-                    PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList`");
-                    statement.execute();
-                    statement.close();
-                } catch (SQLException ex){
-                    String pass = "jdbc:mysql://" + plugin.getConfig().getString("mysqlServer") + ":" + plugin.getConfig().getInt("mysqlPort") + "/" + plugin.getConfig().getString("mysqlDatabase") + plugin.getConfig().getString("mysqlOption");
-                    DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
-
-                    try {
-                        con = DriverManager.getConnection(pass, plugin.getConfig().getString("mysqlUsername"), plugin.getConfig().getString("mysqlPassword"));
-                        con.setAutoCommit(true);
-                    } catch (SQLException exx){
-                        Bukkit.getServer().getPluginManager().disablePlugin(plugin, true);
-                    }
-                }
-            } catch (SQLException thr) {
-                thr.printStackTrace();
-            }
+            Connection con = MySQL.getConnect("");
 
             PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList` WHERE BanID = ?");
             statement.setInt(1, id);
@@ -234,6 +191,7 @@ public class InfoCommand implements CommandExecutor {
 
             sender.sendMessage(ChatColor.YELLOW + "BANされていないユーザーです");
 
+            MySQL.closeConnect(con);
         } catch (Exception e){
             e.printStackTrace();
         }

@@ -13,6 +13,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import xyz.n7mn.dev.banshareplugin.data.BanData;
 import xyz.n7mn.dev.banshareplugin.data.MCID2UUIDAPIResult;
+import xyz.n7mn.dev.nanamilib.api.MySQL;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -24,9 +25,13 @@ import java.util.UUID;
 
 public class BanCommand implements CommandExecutor {
 
-    private final Connection con;
-    public BanCommand(Connection con){
-        this.con = con;
+    private Connection con = null;
+    public BanCommand(){
+        try {
+            con = MySQL.getConnect("");
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -122,12 +127,13 @@ public class BanCommand implements CommandExecutor {
 
                     statement2.execute();
                     statement2.close();
+                    con.close();
                 } catch (SQLException e){
                     e.printStackTrace();
                 }
 
                 if (player != null){
-                    player.kickPlayer("");
+                    player.kickPlayer("以下の理由でBANされました。\n"+args[1]);
                 }
 
 

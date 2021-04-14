@@ -22,13 +22,21 @@ repositories {
         name = 'sonatype'
         url = 'https://oss.sonatype.org/content/groups/public/'
     }
+    maven { url 'https://jitpack.io' }
+    maven {
+        name 'm2-dv8tion'
+        url 'https://m2.dv8tion.net/releases'
+    }
 }
 
 dependencies {
-    compileOnly 'com.destroystokyo.paper:paper-api:1.12.2-R0.1-SNAPSHOT'
+    compileOnly 'com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT'
     compile 'mysql:mysql-connector-java:8.0.23'
     compile 'com.squareup.okhttp3:okhttp:4.9.0'
     compile 'com.google.code.gson:gson:2.8.6'
+
+    compileOnly 'com.github.nanami-network:NanamiLib:0.2'
+    compileOnly 'net.dv8tion:JDA:4.2.1_255'
 }
 
 processResources {
