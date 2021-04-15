@@ -12,7 +12,7 @@ public final class BanSharePlugin extends JavaPlugin {
         String area = getConfig().getString("Area");
 
         getServer().getPluginManager().registerEvents(new BanShareListener(area, this), this);
-        getCommand("gban").setExecutor(new BanCommand());
+        getCommand("gban").setExecutor(new BanCommand(this));
         getCommand("gban").setTabCompleter(new CommandTab());
         getCommand("baninfo").setExecutor(new InfoCommand(this));
 

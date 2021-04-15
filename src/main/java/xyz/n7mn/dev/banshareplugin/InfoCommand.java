@@ -13,7 +13,6 @@ import org.bukkit.plugin.Plugin;
 import xyz.n7mn.dev.banshareplugin.data.BanData;
 import xyz.n7mn.dev.banshareplugin.data.MCID2UUIDAPIResult;
 import xyz.n7mn.dev.banshareplugin.data.UUID2MCIDResult;
-import xyz.n7mn.dev.nanamilib.api.MySQL;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -35,12 +34,10 @@ public class InfoCommand implements CommandExecutor {
             return true;
         }
 
-
-
         if (args.length == 0){
             new Thread(()->{
                 try {
-                    Connection con = MySQL.getConnect("");
+                    Connection con = DriverManager.getConnection("jdbc:mysql://" + plugin.getConfig().getString("mysqlServer") + ":" + plugin.getConfig().getInt("mysqlPort") + "/" + plugin.getConfig().getString("mysqlDatabase") + plugin.getConfig().getString("mysqlOption"), plugin.getConfig().getString("mysqlUsername"), plugin.getConfig().getString("mysqlPassword"));
                     List<BanData> banDataList = new ArrayList<>();
                     int AreaBanCount = 0;
                     try {
@@ -66,6 +63,10 @@ public class InfoCommand implements CommandExecutor {
                                 AreaBanCount++;
                             }
                         }
+
+                        set.close();
+                        statement.close();
+
                     } catch (Exception thr) {
                         thr.printStackTrace();
                     }
@@ -77,7 +78,7 @@ public class InfoCommand implements CommandExecutor {
                             ChatColor.YELLOW + "詳細な情報を取得したい場合は/baninfo <ID>または/baninfo <MCID>と入力してください。"
                     );
 
-                    MySQL.closeConnect(con);
+                    con.close();
                 } catch (Exception e){
                     e.printStackTrace();
                 }
@@ -116,7 +117,7 @@ public class InfoCommand implements CommandExecutor {
 
                 UUID uuid = UUID.fromString(uuidText.replaceFirst("([0-9a-fA-F]{8})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]+)", "$1-$2-$3-$4-$5"));
 
-                Connection con = MySQL.getConnect("");
+                Connection con = DriverManager.getConnection("jdbc:mysql://" + plugin.getConfig().getString("mysqlServer") + ":" + plugin.getConfig().getInt("mysqlPort") + "/" + plugin.getConfig().getString("mysqlDatabase") + plugin.getConfig().getString("mysqlOption"), plugin.getConfig().getString("mysqlUsername"), plugin.getConfig().getString("mysqlPassword"));
 
                 PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList` WHERE UserUUID = ?");
                 statement.setString(1, uuid.toString());
@@ -141,7 +142,7 @@ public class InfoCommand implements CommandExecutor {
                     return true;
                 }
 
-                MySQL.closeConnect(con);
+                con.close();
 
                 sender.sendMessage(ChatColor.YELLOW + "BANされていないユーザーです");
 
@@ -154,7 +155,7 @@ public class InfoCommand implements CommandExecutor {
 
 
         try {
-            Connection con = MySQL.getConnect("");
+            Connection con = DriverManager.getConnection("jdbc:mysql://" + plugin.getConfig().getString("mysqlServer") + ":" + plugin.getConfig().getInt("mysqlPort") + "/" + plugin.getConfig().getString("mysqlDatabase") + plugin.getConfig().getString("mysqlOption"), plugin.getConfig().getString("mysqlUsername"), plugin.getConfig().getString("mysqlPassword"));
 
             PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList` WHERE BanID = ?");
             statement.setInt(1, id);
@@ -186,12 +187,15 @@ public class InfoCommand implements CommandExecutor {
 
                 set.close();
                 statement.close();
+                con.close();
                 return true;
             }
 
             sender.sendMessage(ChatColor.YELLOW + "BANされていないユーザーです");
+            set.close();
+            statement.close();
 
-            MySQL.closeConnect(con);
+            con.close();
         } catch (Exception e){
             e.printStackTrace();
         }

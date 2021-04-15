@@ -1,19 +1,19 @@
 package xyz.n7mn.dev.banshareplugin;
 
 import com.google.gson.Gson;
+import net.kyori.adventure.text.Component;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import xyz.n7mn.dev.banshareplugin.data.BanData;
 import xyz.n7mn.dev.banshareplugin.data.MCID2UUIDAPIResult;
-import xyz.n7mn.dev.nanamilib.api.MySQL;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -25,13 +25,10 @@ import java.util.UUID;
 
 public class BanCommand implements CommandExecutor {
 
-    private Connection con = null;
-    public BanCommand(){
-        try {
-            con = MySQL.getConnect("");
-        } catch (Exception e){
-            e.printStackTrace();
-        }
+    private final Plugin plugin;
+
+    public BanCommand(Plugin plugin){
+        this.plugin = plugin;
     }
 
     @Override
@@ -82,6 +79,9 @@ public class BanCommand implements CommandExecutor {
 
                 List<BanData> banDataList = new ArrayList<>();
                 try {
+
+                    Connection con = DriverManager.getConnection("jdbc:mysql://" + plugin.getConfig().getString("mysqlServer") + ":" + plugin.getConfig().getInt("mysqlPort") + "/" + plugin.getConfig().getString("mysqlDatabase") + plugin.getConfig().getString("mysqlOption"), plugin.getConfig().getString("mysqlUsername"), plugin.getConfig().getString("mysqlPassword"));
+
                     PreparedStatement statement = con.prepareStatement("SELECT * FROM BanList");
                     ResultSet set = statement.executeQuery();
                     while(set.next()){
@@ -99,6 +99,9 @@ public class BanCommand implements CommandExecutor {
                                 )
                         );
                     }
+
+                    set.close();
+                    statement.close();
 
                     PreparedStatement statement2 = con.prepareStatement("INSERT INTO `BanList` (`BanID`, `UserUUID`, `Reason`, `Area`, `IP`, `EndDate`, `ExecuteDate`, `ExecuteUserUUID`, `Active`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ");
                     statement2.setInt(1, banDataList.size() + 1);
@@ -127,13 +130,14 @@ public class BanCommand implements CommandExecutor {
 
                     statement2.execute();
                     statement2.close();
+
                     con.close();
                 } catch (SQLException e){
                     e.printStackTrace();
                 }
 
                 if (player != null){
-                    player.kickPlayer("以下の理由でBANされました。\n"+args[1]);
+                    player.kick(Component.text("以下の理由でBANされました。\n"+args[1]));
                 }
 
 
