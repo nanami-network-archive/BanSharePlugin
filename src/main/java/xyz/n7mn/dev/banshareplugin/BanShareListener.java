@@ -1,12 +1,10 @@
 package xyz.n7mn.dev.banshareplugin;
 
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.MessageBuilder;
-import net.dv8tion.jda.api.events.ReadyEvent;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -16,12 +14,10 @@ import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import xyz.n7mn.dev.banshareplugin.data.BanData;
-import xyz.n7mn.dev.nanamilib.api.MySQL;
-import xyz.n7mn.dev.nanamilib.event.DiscordReadyEvent;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -33,8 +29,6 @@ public class BanShareListener implements Listener {
 
     private final String area;
     private final Plugin plugin;
-
-    private JDA jda = null;
 
     public BanShareListener(String area, Plugin plugin){
         this.area = area;
@@ -48,9 +42,9 @@ public class BanShareListener implements Listener {
         List<BanData> banDataList = new ArrayList<>();
 
         try {
-            Connection connect = MySQL.getConnect("BanSharePlugin");
+            Connection con = DriverManager.getConnection("jdbc:mysql://" + plugin.getConfig().getString("mysqlServer") + ":" + plugin.getConfig().getInt("mysqlPort") + "/" + plugin.getConfig().getString("mysqlDatabase") + plugin.getConfig().getString("mysqlOption"), plugin.getConfig().getString("mysqlUsername"), plugin.getConfig().getString("mysqlPassword"));
 
-            PreparedStatement statement = connect.prepareStatement("SELECT * FROM `BanList` WHERE Active = 1");
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList` WHERE Active = 1");
             ResultSet set = statement.executeQuery();
 
             while(set.next()){
@@ -69,7 +63,10 @@ public class BanShareListener implements Listener {
                 );
             }
 
-            MySQL.closeConnect(connect);
+            set.close();
+            statement.close();
+
+            con.close();
 
         } catch (Exception thr) {
             thr.printStackTrace();
@@ -79,22 +76,69 @@ public class BanShareListener implements Listener {
         for (BanData data : banDataList){
             if (data.isActive() && data.getUserUUID().equals(uuid)){
                 if (data.getArea().equals("all") || data.getArea().equals(area)){
-                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, data.getReason());
+                    Component component = Component.text("以下の理由でBANされています。\n"+data.getReason());
+                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, component);
                     return;
                 }
             }
         }
     }
 
-    @EventHandler
+    @EventHandler (priority = EventPriority.HIGHEST)
     public void InventoryClickEvent (InventoryClickEvent e){
+        Inventory inventory = e.getClickedInventory();
+        Collection<? extends Player> onlinePlayers = Bukkit.getOnlinePlayers();
 
+        if (inventory == null){
+            return;
+        }
 
+        ItemStack item = e.getCurrentItem();
+        if (item == null){
+            return;
+        }
+        item = item.clone();
+        ItemStack finalItem = item;
+        ItemStack reason = inventory.getItem(onlinePlayers.size());
+
+        if (reason == null){
+            return;
+        }
+
+        if (!reason.getItemMeta().getLocalizedName().startsWith("理由")){
+            return;
+        }
+
+        e.setCancelled(true);
+        inventory.clear();
+        e.getView().close();
+
+        if (!item.getType().equals(Material.PLAYER_HEAD)){
+            return;
+        }
+
+        new Thread(()->{
+
+            SkullMeta meta = (SkullMeta) finalItem.getItemMeta();
+            // System.out.println(meta.getOwningPlayer().getName());
+
+            for (Player player : onlinePlayers){
+                if (player.isOp() || player.hasPermission("7misys.ban")){
+                    player.sendMessage(ChatColor.YELLOW + "" +
+                            "[ななみ鯖]"+ChatColor.RESET+" "+meta.getOwningPlayer().getName()+"さんが以下の理由で通報されました。\n" +
+                            "          理由 : " + reason.getItemMeta().getLocalizedName().split(":")[1]);
+                }
+            }
+
+            HumanEntity player = e.getView().getPlayer();
+            player.sendMessage(ChatColor.YELLOW + "[ななみ鯖] "+ChatColor.RESET+"通報しました。");
+        }).start();
 
     }
 
     @EventHandler
     public void InventoryCreativeEvent (InventoryCreativeEvent e){
+
 
 
     }

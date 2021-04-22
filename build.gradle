@@ -35,7 +35,6 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:4.9.0'
     compile 'com.google.code.gson:gson:2.8.6'
 
-    compileOnly 'net.dv8tion:JDA:4.2.1_255'
 }
 
 processResources {
