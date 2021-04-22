@@ -1,4 +1,4 @@
-name: BanSharePlugin
+name: BanSharePlugin_for1.16.5
 version: @version@
 main: xyz.n7mn.dev.banshareplugin.BanSharePlugin
 authors: [ 7mi_chan ]
