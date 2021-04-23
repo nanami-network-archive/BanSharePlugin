@@ -116,6 +116,14 @@ public class BanShareListener implements Listener {
             return;
         }
 
+        if (reason.getItemMeta() == null){
+            return;
+        }
+
+        if (reason.getItemMeta().getLocalizedName() == null || reason.getItemMeta().getLocalizedName().length() == 0){
+            return;
+        }
+
         if (!reason.getItemMeta().getLocalizedName().startsWith("理由")){
             return;
         }
