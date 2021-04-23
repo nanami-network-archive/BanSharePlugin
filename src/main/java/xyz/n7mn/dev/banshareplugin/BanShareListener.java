@@ -1,6 +1,5 @@
 package xyz.n7mn.dev.banshareplugin;
 
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -20,10 +19,7 @@ import org.bukkit.plugin.Plugin;
 import xyz.n7mn.dev.banshareplugin.data.BanData;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class BanShareListener implements Listener {
 
@@ -42,6 +38,22 @@ public class BanShareListener implements Listener {
         List<BanData> banDataList = new ArrayList<>();
 
         try {
+
+            boolean found = false;
+            Enumeration<Driver> drivers = DriverManager.getDrivers();
+
+            while (drivers.hasMoreElements()){
+                Driver driver = drivers.nextElement();
+                if (driver.equals(new com.mysql.cj.jdbc.Driver())){
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found){
+                DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
+            }
+
             Connection con = DriverManager.getConnection("jdbc:mysql://" + plugin.getConfig().getString("mysqlServer") + ":" + plugin.getConfig().getInt("mysqlPort") + "/" + plugin.getConfig().getString("mysqlDatabase") + plugin.getConfig().getString("mysqlOption"), plugin.getConfig().getString("mysqlUsername"), plugin.getConfig().getString("mysqlPassword"));
 
             PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList` WHERE Active = 1");
@@ -76,8 +88,7 @@ public class BanShareListener implements Listener {
         for (BanData data : banDataList){
             if (data.isActive() && data.getUserUUID().equals(uuid)){
                 if (data.getArea().equals("all") || data.getArea().equals(area)){
-                    Component component = Component.text("以下の理由でBANされています。\n"+data.getReason());
-                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, component);
+                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "以下の理由でBANされています。\n"+data.getReason());
                     return;
                 }
             }
@@ -113,7 +124,7 @@ public class BanShareListener implements Listener {
         inventory.clear();
         e.getView().close();
 
-        if (!item.getType().equals(Material.PLAYER_HEAD)){
+        if (!item.getType().equals(Material.SKULL_ITEM)){
             return;
         }
 

@@ -29,7 +29,7 @@ public class ReportCommand implements CommandExecutor {
             Inventory inventory = Bukkit.createInventory(null, 45);
             for (Player p : Bukkit.getOnlinePlayers()){
 
-                ItemStack stack = new ItemStack(Material.PLAYER_HEAD);
+                ItemStack stack = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
                 SkullMeta itemMeta = (SkullMeta) stack.getItemMeta().clone();
                 itemMeta.setPlayerProfile(p.getPlayerProfile());
                 stack.setItemMeta(itemMeta);
@@ -38,7 +38,7 @@ public class ReportCommand implements CommandExecutor {
 
             int i = 0;
             for (int x = (Bukkit.getOnlinePlayers().size() + 1); x <= 45; x++){
-                ItemStack stack = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+                ItemStack stack = new ItemStack(Material.STAINED_GLASS_PANE);
                 if (i == 0){
                     ItemMeta meta = stack.getItemMeta();
                     meta.setLocalizedName("理由:" + args[0]);

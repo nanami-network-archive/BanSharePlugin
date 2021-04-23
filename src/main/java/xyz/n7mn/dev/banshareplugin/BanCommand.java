@@ -1,7 +1,6 @@
 package xyz.n7mn.dev.banshareplugin;
 
 import com.google.gson.Gson;
-import net.kyori.adventure.text.Component;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -17,11 +16,8 @@ import xyz.n7mn.dev.banshareplugin.data.MCID2UUIDAPIResult;
 
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
-import java.util.UUID;
 
 public class BanCommand implements CommandExecutor {
 
@@ -79,6 +75,20 @@ public class BanCommand implements CommandExecutor {
 
                 List<BanData> banDataList = new ArrayList<>();
                 try {
+                    boolean found = false;
+                    Enumeration<Driver> drivers = DriverManager.getDrivers();
+
+                    while (drivers.hasMoreElements()){
+                        Driver driver = drivers.nextElement();
+                        if (driver.equals(new com.mysql.cj.jdbc.Driver())){
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found){
+                        DriverManager.registerDriver(new com.mysql.cj.jdbc.Driver());
+                    }
 
                     Connection con = DriverManager.getConnection("jdbc:mysql://" + plugin.getConfig().getString("mysqlServer") + ":" + plugin.getConfig().getInt("mysqlPort") + "/" + plugin.getConfig().getString("mysqlDatabase") + plugin.getConfig().getString("mysqlOption"), plugin.getConfig().getString("mysqlUsername"), plugin.getConfig().getString("mysqlPassword"));
 
@@ -137,7 +147,7 @@ public class BanCommand implements CommandExecutor {
                 }
 
                 if (player != null){
-                    player.kick(Component.text("以下の理由でBANされました。\n"+args[1]));
+                    player.kickPlayer("以下の理由でBANされました。\n"+args[1]);
                 }
 
 
