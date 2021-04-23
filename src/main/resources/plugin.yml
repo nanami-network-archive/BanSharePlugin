@@ -1,8 +1,8 @@
-name: BanSharePlugin_for1.16.5
+name: BanSharePlugin
 version: @version@
 main: xyz.n7mn.dev.banshareplugin.BanSharePlugin
 authors: [ 7mi_chan ]
-description: BanSharePlugin
+description: BanSharePlugin for 1.16.5
 database: true
 api-version: 1.16
 commands:

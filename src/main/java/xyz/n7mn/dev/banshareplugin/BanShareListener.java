@@ -14,7 +14,6 @@ import org.bukkit.event.inventory.InventoryCreativeEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.plugin.Plugin;
 import xyz.n7mn.dev.banshareplugin.data.BanData;
