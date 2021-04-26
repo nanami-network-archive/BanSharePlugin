@@ -1,5 +1,9 @@
 package xyz.n7mn.dev.banshareplugin;
 
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -35,7 +39,7 @@ public class BanShareListener implements Listener {
     public void AsyncPlayerPreLoginEvent (AsyncPlayerPreLoginEvent e){
 
         UUID uuid = e.getUniqueId();
-        List<BanData> banDataList = new ArrayList<>();
+        //System.out.println("test");
 
         try {
 
@@ -56,23 +60,17 @@ public class BanShareListener implements Listener {
 
             Connection con = DriverManager.getConnection("jdbc:mysql://" + plugin.getConfig().getString("mysqlServer") + ":" + plugin.getConfig().getInt("mysqlPort") + "/" + plugin.getConfig().getString("mysqlDatabase") + plugin.getConfig().getString("mysqlOption"), plugin.getConfig().getString("mysqlUsername"), plugin.getConfig().getString("mysqlPassword"));
 
-            PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList` WHERE Active = 1");
+            PreparedStatement statement = con.prepareStatement("SELECT * FROM `BanList` WHERE Active = 1 AND UserUUID = ?");
+            statement.setString(1, uuid.toString());
             ResultSet set = statement.executeQuery();
 
-            while(set.next()){
-                banDataList.add(
-                        new BanData(
-                                set.getInt("BanID"),
-                                UUID.fromString(set.getString("UserUUID")),
-                                set.getString("Reason"),
-                                set.getString("Area"),
-                                set.getString("IP"),
-                                set.getDate("EndDate"),
-                                set.getDate("ExecuteDate"),
-                                UUID.fromString(set.getString("ExecuteUserUUID")),
-                                set.getBoolean("Active")
-                        )
-                );
+            if (set.next()){
+                if (set.getString("Area").equals("all") || set.getString("Area").equals(area)){
+                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "" +
+                            "--- ななみ鯖 ---\n" +
+                            "以下の理由でBANされています。\n" +
+                            "理由 : " + set.getString("Reason"));
+                }
             }
 
             set.close();
@@ -83,15 +81,6 @@ public class BanShareListener implements Listener {
         } catch (Exception thr) {
             thr.printStackTrace();
 
-        }
-
-        for (BanData data : banDataList){
-            if (data.isActive() && data.getUserUUID().equals(uuid)){
-                if (data.getArea().equals("all") || data.getArea().equals(area)){
-                    e.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, "以下の理由でBANされています。\n"+data.getReason());
-                    return;
-                }
-            }
         }
     }
 
@@ -143,9 +132,19 @@ public class BanShareListener implements Listener {
 
             for (Player player : onlinePlayers){
                 if (player.isOp() || player.hasPermission("7misys.ban")){
-                    player.sendMessage(ChatColor.YELLOW + "" +
+                    TextComponent from = new TextComponent("[通報元]");
+                    TextComponent target = new TextComponent(" [通報先tp]");
+                    from.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(e.getView().getPlayer().getName())}));
+                    target.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp "+meta.getOwningPlayer().getName()));
+                    from.addExtra(target);
+
+                    TextComponent component = new TextComponent(ChatColor.YELLOW + "" +
                             "[ななみ鯖]"+ChatColor.RESET+" "+meta.getOwningPlayer().getName()+"さんが以下の理由で通報されました。\n" +
-                            "          理由 : " + reason.getItemMeta().getLocalizedName().split(":")[1]);
+                            "理由 : " + reason.getItemMeta().getLocalizedName().split(":")[1]+"\n");
+                    component.addExtra(from);
+
+                    player.sendMessage(component);
+
                 }
             }
 
