@@ -133,17 +133,19 @@ public class BanShareListener implements Listener {
             for (Player player : onlinePlayers){
                 if (player.isOp() || player.hasPermission("7misys.ban")){
                     TextComponent from = new TextComponent("[通報元]");
-                    TextComponent target = new TextComponent(" [通報先tp]");
+                    TextComponent target = new TextComponent("[通報先tp]");
                     from.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new BaseComponent[]{new TextComponent(e.getView().getPlayer().getName())}));
                     target.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/tp "+meta.getOwningPlayer().getName()));
-                    from.addExtra(target);
 
                     TextComponent component = new TextComponent(ChatColor.YELLOW + "" +
                             "[ななみ鯖]"+ChatColor.RESET+" "+meta.getOwningPlayer().getName()+"さんが以下の理由で通報されました。\n" +
                             "理由 : " + reason.getItemMeta().getLocalizedName().split(":")[1]+"\n");
                     component.addExtra(from);
 
-                    player.sendMessage(component);
+                    TextComponent component1 = new TextComponent(component);
+                    component1.addExtra(target);
+
+                    player.sendMessage(component1);
 
                 }
             }
